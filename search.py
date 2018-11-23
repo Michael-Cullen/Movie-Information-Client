@@ -3,6 +3,7 @@ import omdb
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
+import urllib.request
 
 class App(QMainWindow):
     omdb.set_default('apikey', '582f52b9')
@@ -39,6 +40,8 @@ class App(QMainWindow):
     def on_click(self):
         textboxValue = self.textbox.text()
         self.textbox.setText("")
+        combinedRequest = "http://img.omdbapi.com/?apikey=582f52b9&" + textboxValue
+        contents = urllib.request.urlopen(combinedRequest).read()
         res = omdb.search(textboxValue)
         self.list.clear();
         for r in res:
