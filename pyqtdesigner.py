@@ -10,6 +10,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot
 import omdb
 import urllib
+import json
+import pprint
+from PIL import Image
+from io import BytesIO
+import os##
+#import Image##
 
 apiKey = '582f52b9'
 searchTerm = "Sharknado"
@@ -91,9 +97,25 @@ class Ui_MainWindow(object):
         searchBoxValue = self.searchBox.text()
         self.searchBox.setText("")
         self.infoBox.clear()
-        data = urllib.request.urlopen(baseurl)
-        #print(data.read())
-        self.infoBox.addItem(data.read().decode("utf-8"))
+        data = urllib.request.urlopen(baseurl).read()
+        myJson = json.loads(data)
+        #myJson = data.decode('utf-8').replace("'",'"')
+        #myJson = json.load(data)
+        #print_json(myJson)
+        print('- ' * 20)
+        #data = json.loads(myJson)
+        s = json.dumps(myJson, indent=4, sort_keys=True)
+        print(s)
+        self.infoBox.addItem(myJson["Title"])
+        posterURL = myJson["Poster"]
+        response = urllib.request.urlopen(posterURL)
+        img = Image.open(BytesIO(response.read()))
+
+        #image = Image.open(img)
+        img.show()
+
+        #self.pictureFrame.addItem(myJson[img])
+
 
         #self.infoBox.addItem(convertSearch(searchBoxValue))
         # res = omdb.search(searchBoxValue)
