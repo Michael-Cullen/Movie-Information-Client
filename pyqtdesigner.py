@@ -7,6 +7,14 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSlot
+import omdb
+import urllib
+
+apiKey = '582f52b9'
+searchTerm = "Sharknado"
+#omdb.set_default('apikey',apiKey)
+baseurl = "http://www.omdbapi.com/?apikey="+apiKey+"&t="+searchTerm#&t=Sharknado&y=2013&plot=short&r=xml"
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -59,6 +67,11 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.menubar.addAction(self.menuMovie_Information_Client.menuAction())
 
+
+        self.searchButton.clicked.connect(self.displaySearch)
+        #self.show()
+
+
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -73,6 +86,24 @@ class Ui_MainWindow(object):
         self.randomSearch.setText(_translate("MainWindow", "I\'m Feeling Lucky"))
         self.menuMovie_Information_Client.setTitle(_translate("MainWindow", "Movie Information Client"))
 
+    # @pyqtSlot()
+    def displaySearch(self):
+        searchBoxValue = self.searchBox.text()
+        self.searchBox.setText("")
+        self.infoBox.clear()
+        data = urllib.request.urlopen(baseurl)
+        #print(data.read())
+        self.infoBox.addItem(data.read().decode("utf-8"))
+
+        #self.infoBox.addItem(convertSearch(searchBoxValue))
+        # res = omdb.search(searchBoxValue)
+        # self.infoBox.clear();
+        # for r in res:
+        #     self.infoBox.addItem(r["title"])
+
+     
+def convertSearch(text):
+    return text + " bob "
 
 if __name__ == "__main__":
     import sys
