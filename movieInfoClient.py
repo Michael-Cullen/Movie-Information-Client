@@ -12,15 +12,16 @@ import omdb
 import urllib
 import json
 import pprint
-from PIL import Image
+from PIL import Image, ImageQt
+#from PIL.ImageQt import ImageQt
 from io import BytesIO
 import os##
 #import Image##
 
 apiKey = '582f52b9'
-searchTerm = "Sharknado"
+#searchTerm = "Sharknado"
 #omdb.set_default('apikey',apiKey)
-baseurl = "http://www.omdbapi.com/?apikey="+apiKey+"&t="+searchTerm#&t=Sharknado&y=2013&plot=short&r=xml"
+#searchUrl = "http://www.omdbapi.com/?apikey="+apiKey+"&t="+searchTerm#&t=Sharknado&y=2013&plot=short&r=xml"
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -56,11 +57,13 @@ class Ui_MainWindow(object):
         self.randomSearch = QtWidgets.QPushButton(self.centralwidget)
         self.randomSearch.setObjectName("randomSearch")
         self.gridLayout.addWidget(self.randomSearch, 1, 0, 1, 1)
-        self.pictureFrame = QtWidgets.QFrame(self.centralwidget)
-        self.pictureFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.pictureFrame.setFrameShadow(QtWidgets.QFrame.Raised)
+
+        self.pictureFrame = QtWidgets.QLabel(self.centralwidget)
+        # self.pictureFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        # self.pictureFrame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.pictureFrame.setObjectName("pictureFrame")
         self.gridLayout.addWidget(self.pictureFrame, 2, 1, 1, 2)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 980, 22))
@@ -94,10 +97,11 @@ class Ui_MainWindow(object):
 
     # @pyqtSlot()
     def displaySearch(self):
-        searchBoxValue = self.searchBox.text()
+        searchTerm = self.searchBox.text()
+        searchUrl = "http://www.omdbapi.com/?apikey="+apiKey+"&t="+searchTerm
         self.searchBox.setText("")
         self.infoBox.clear()
-        data = urllib.request.urlopen(baseurl).read()
+        data = urllib.request.urlopen(searchUrl).read()
         myJson = json.loads(data)
         #myJson = data.decode('utf-8').replace("'",'"')
         #myJson = json.load(data)
@@ -107,12 +111,27 @@ class Ui_MainWindow(object):
         s = json.dumps(myJson, indent=4, sort_keys=True)
         print(s)
         self.infoBox.addItem(myJson["Title"])
+        self.infoBox.addItem(myJson["Year"])
+        for rating in myJson["Ratings"]:
+        	self.infoBox.addItem(rating["Source"])
+        	self.infoBox.addItem(rating["Value"])
+        #self.infoBox.addItem(json.dumps(myJson["Ratings"]))
+        self.infoBox.addItem(myJson["Runtime"])
+
+
         posterURL = myJson["Poster"]
-        response = urllib.request.urlopen(posterURL)
-        img = Image.open(BytesIO(response.read()))
+        data = urllib.request.urlopen(posterURL).read()
+        # img = ImageQt.open(BytesIO(response.read()))
+        # img = Image.open(BytesIO())
+        #print(type(img))
+        qtimg = QtGui.QImage()
+        qtimg.loadFromData(data)
+
+        pixmap = QtGui.QPixmap(qtimg)
+        self.pictureFrame.setPixmap(pixmap)
 
         #image = Image.open(img)
-        img.show()
+        # img.show()
 
         #self.pictureFrame.addItem(myJson[img])
 
@@ -124,8 +143,8 @@ class Ui_MainWindow(object):
         #     self.infoBox.addItem(r["title"])
 
      
-def convertSearch(text):
-    return text + " bob "
+# def convertSearch(text):
+#     return text + " bob "
 
 if __name__ == "__main__":
     import sys
