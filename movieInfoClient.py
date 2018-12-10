@@ -16,6 +16,7 @@ from PIL import Image, ImageQt
 #from PIL.ImageQt import ImageQt
 from io import BytesIO
 import os##
+from random import randint
 #import Image##
 
 apiKey = '582f52b9'
@@ -76,9 +77,17 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.menubar.addAction(self.menuMovie_Information_Client.menuAction())
 
-
+        #Search function on click
         self.searchButton.clicked.connect(self.displaySearch)
-        #self.show()
+
+        #Wishlist function on click
+        self.addWishlist.clicked.connect(self.addToWishlist)
+
+        #Display wishlist on click
+        self.viewWishlist.clicked.connect(self.displayWishlist)
+
+        #I'm feeling lucky button on click
+        self.randomSearch.clicked.connect(self.feelingLucky)
 
 
         self.retranslateUi(MainWindow)
@@ -97,54 +106,114 @@ class Ui_MainWindow(object):
 
     # @pyqtSlot()
     def displaySearch(self):
+
+    	# Search
         searchTerm = self.searchBox.text()
+        searchTerm = searchTerm.replace(" ", "_")
         searchUrl = "http://www.omdbapi.com/?apikey="+apiKey+"&t="+searchTerm
         self.searchBox.setText("")
         self.infoBox.clear()
+
+        # Data Processing
         data = urllib.request.urlopen(searchUrl).read()
         myJson = json.loads(data)
-        #myJson = data.decode('utf-8').replace("'",'"')
-        #myJson = json.load(data)
-        #print_json(myJson)
-        print('- ' * 20)
-        #data = json.loads(myJson)
-        s = json.dumps(myJson, indent=4, sort_keys=True)
-        print(s)
+        # s = json.dumps(myJson, indent=4, sort_keys=True)
+        # print(s)
+
+
+        # Data storage
+        with open('searchItem.json', 'w') as outfile:
+        	json.dump(myJson,outfile)
+
+
+        # Data output
         self.infoBox.addItem(myJson["Title"])
         self.infoBox.addItem(myJson["Year"])
         for rating in myJson["Ratings"]:
         	self.infoBox.addItem(rating["Source"])
         	self.infoBox.addItem(rating["Value"])
-        #self.infoBox.addItem(json.dumps(myJson["Ratings"]))
         self.infoBox.addItem(myJson["Runtime"])
 
-
+        # Poster output
         posterURL = myJson["Poster"]
         data = urllib.request.urlopen(posterURL).read()
-        # img = ImageQt.open(BytesIO(response.read()))
-        # img = Image.open(BytesIO())
-        #print(type(img))
         qtimg = QtGui.QImage()
         qtimg.loadFromData(data)
-
         pixmap = QtGui.QPixmap(qtimg)
         self.pictureFrame.setPixmap(pixmap)
 
-        #image = Image.open(img)
-        # img.show()
 
-        #self.pictureFrame.addItem(myJson[img])
+    def addToWishlist(self):
+
+    	#load search term data
+
+    	with open("searchItem.json") as f:
+    		data = json.load(f)
+
+    	with open("Wishlist.txt", "a") as wishlistFile:
+    		wishlistFile.write(data["Title"])
+    		wishlistFile.write("\n")
+    	#print(data["Title"])
+    	# filmTitle = data["Title"]
+    	# print(filmTitle)
+    	#wishlistFile.write()
+    	#wishlistFile.close()
+
+    def displayWishlist(self):
+
+    	self.infoBox.clear()
+    	with open("Wishlist.txt") as f:
+    		content = f.readlines()
+
+    	content = [x.strip() for x in content]
+    	self.infoBox.addItem("Wishlist:")
+    	for line in content:
+    		self.infoBox.addItem(line)
 
 
-        #self.infoBox.addItem(convertSearch(searchBoxValue))
-        # res = omdb.search(searchBoxValue)
-        # self.infoBox.clear();
-        # for r in res:
-        #     self.infoBox.addItem(r["title"])
+    def feelingLucky(self):
 
-     
-# def convertSearch(text):
-#     return text + " bob "
+    	# Identify Random element
+    	with open("randomSearch.txt") as f:
+    		content = f.readlines()
+
+    	content = [x.strip() for x in content]
+
+    	
+    	randNum = randint(0,9)
+
+    	searchTerm = content[randNum]
+
+    	searchTerm = searchTerm.replace(" ", "_")
+    	searchUrl = "http://www.omdbapi.com/?apikey="+apiKey+"&t="+searchTerm
+    	self.searchBox.setText("")
+    	self.infoBox.clear()
+
+    	data = urllib.request.urlopen(searchUrl).read()
+    	myJson = json.loads(data)
+
+    	with open('searchItem.json', 'w') as outfile:
+    		json.dump(myJson,outfile)
+
+    	self.infoBox.addItem(myJson["Title"])
+    	self.infoBox.addItem(myJson["Year"])
+    	for rating in myJson["Ratings"]:
+    		self.infoBox.addItem(rating["Source"])
+    		self.infoBox.addItem(rating["Value"])
+
+    	self.infoBox.addItem(myJson["Runtime"])
+
+    	posterURL = myJson["Poster"]
+    	data = urllib.request.urlopen(posterURL).read()
+    	qtimg = QtGui.QImage()
+    	qtimg.loadFromData(data)
+    	pixmap = QtGui.QPixmap(qtimg)
+    	self.pictureFrame.setPixmap(pixmap)
+
+    	
+
+
+
 
 if __name__ == "__main__":
     import sys
