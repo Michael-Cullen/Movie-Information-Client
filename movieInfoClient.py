@@ -126,7 +126,7 @@ class Ui_MainWindow(object):
         #print(type(img))
         qtimg = QtGui.QImage()
         qtimg.loadFromData(data)
-
+        self.infoBox.font  #broken code here
         pixmap = QtGui.QPixmap(qtimg)
         self.pictureFrame.setPixmap(pixmap)
 
